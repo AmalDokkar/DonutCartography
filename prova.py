@@ -1,5 +1,7 @@
 from PIL import Image, ImageDraw
 
+#per generar mini donuts x la forma
+
 img = Image.new('RGB', (11, 11), 'Black')
 dib = ImageDraw.Draw(img)
 
