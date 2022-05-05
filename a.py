@@ -2,17 +2,17 @@ from PIL import Image, ImageDraw
 import math, mpmath
 
 # function for projection equations
-def projectionCoordinates (theta, phi, signX, signY):
-    x = R + (r * (2 / (math.tan(theta) + mpmath.sec(theta)))) *signY*math.sin(phi)
-    y = R - (r * (2 / (math.tan(theta) + mpmath.sec(theta)))) *signX*math.cos(phi)
+def projectionCoordinates (theta, phi):
+    x = R * math.cos(theta) + (2*r / (math.tan(theta) + mpmath.sec(theta))) * math.sin(phi)
+    y = R * math.sin(theta) - (2*r / (math.tan(theta) + mpmath.sec(theta))) * math.cos(phi)
     return x, y
 
 # function to get theta
-def getTheta (x, phi, sign):
+def getTheta (x, phi):
     # it's all rigth because we only want positive thetas
-    k = ((x / sign * math.cos(phi)) - R) / r
+    k = ((x / math.cos(phi)) - R) / r
     if (k < -1.0): k = -1.0 # because of floating point precision
-    if (k > 1.0): k = 1     # this must be done
+    if (k > 1.0): k = 1.0   # this must be done
     theta = math.acos(k)
     return theta
 
@@ -53,41 +53,44 @@ for i in range(0, H):
         inX = i - X
         inY = j - Y
 
+        if quadrant(inX, inY) == 3 or quadrant(inX, inY) == 4:
+            continue
+
         if r*r <= inX*inX + inY*inY <= R*R: # inside the donut
-            # print(inX, inY) # to keep track of progress
+            print(inX, inY) # to keep track of progress
+            # dib.point((inX + MAXX//2, inY + MAXY//2), 'Pink')  
 
-            signX, signY, phi = 1, 1, 10000000000
-            if (inX < 0): signX = -1    # sadly, in only gives positive values :(
-            if (inY < 0): signY = -1
-            if (inX != 0): phi = math.atan(inY / inX)   # not 100% sure about this
+            phi = 10000000000
+            # if (inX < 0): signX = -1    # sadly, in only gives positive values :(
+            # if (inY < 0): signY = -1
+            if (inX != 0.0): phi = math.atan(inY / inX)   # not 100% sure about this
 
-            theta = getTheta(inX, phi, signX)
-            outX, outY = projectionCoordinates(theta, phi, signX, signY)
-            print(outX, outY)
-            
-            if (quadrant(inX, inY) != quadrant(outX, outY)):
-                continue
+            theta = getTheta(inX, phi)
+            outX, outY = projectionCoordinates(theta, phi)
 
-            outX += X   # important to add the center coordinates
-            outY += Y   # to get the pixel's position!
+            outX += MAXX//2   # important to add the center coordinates
+            outY += MAXY//2   # to get the pixel's position!
 
             if 0 <= outX <= MAXX and 0 <= outY <= MAXY: # inside bounds
                 color = inImg.getpixel((i, j))
                 dib.point((outX, outY), color) # dib on outImg
     
-outImg.save("out5.jpg")
+outImg.save("out11.jpg")
 
 
 """
+
 Test 1:
     R = 725
-    r = 440
+    r = 220
     X = 745
     Y = 725
 
 c/p:
+
 725
-440
+220
 745
 725
+
 """
