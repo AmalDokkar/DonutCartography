@@ -55,14 +55,14 @@ for i in range(H):
             outX, outY = projectionCoordinates(theta, phi)
 
             if quadrant(inX, inY) == 1 or quadrant(inX, inY) == 4:
-                outX += MAX//2
-                outY += MAX//2
+                outX += MAX/2
+                outY += MAX/2
                 if 0 <= outX <= MAX and 0 <= outY <= MAX:
                     color = inImg.getpixel((i, j))
                     dib.point((outX, outY), color)
             else:
-                outX = MAX//2 - outX
-                outY = MAX//2 - outY
+                outX = MAX/2 - outX
+                outY = MAX/2 - outY
                 if 0 <= outX <= MAX and 0 <= outY <= MAX:
                     color = inImg.getpixel((i, j))
                     dib.point((outX, outY), color)
@@ -92,7 +92,13 @@ for i in range(MAX+1):
             bfs.append((i, j, color))
 
 while len(bfs) > 0:
-    x, y, color = bfs.pop()
+    x, y, color = bfs.popleft()
+    print(x, y)
+
+    z = (x-MAX/2)*(x-MAX/2) + (y-MAX/2)*(y-MAX/2)
+    if z < K*K or (MAX/2)*(MAX/2) < z:
+        continue
+
     if black(x, y):
         dib.point((x, y), color)
 
