@@ -1,19 +1,29 @@
+from cmath import sqrt
 from PIL import Image, ImageDraw
 import math, mpmath
 
 # function for projection equations
 def projectionCoordinates (theta, phi):
-    x = R * math.cos(theta) + (2*r / (math.tan(theta) + mpmath.sec(theta))) * math.sin(phi)
-    y = R * math.sin(theta) - (2*r / (math.tan(theta) + mpmath.sec(theta))) * math.cos(phi)
+    # x = R * math.cos(phi) + (2*r / (math.tan(theta) + mpmath.sec(theta))) * math.sin(phi)
+    # y = R * math.sin(phi) - (2*r / (math.tan(theta) + mpmath.sec(theta))) * math.cos(phi)
+    a = (2 * r * math.cos(theta)) / (1 + math.sin(theta))
+    x = (R + a) * math.cos(phi)
+    y = (R + a) * math.sin(phi)
     return x, y
 
 # function to get theta
-def getTheta (x, phi):
+def getTheta (x, y, phi):
     # it's all rigth because we only want positive thetas
-    k = ((x / math.cos(phi)) - R) / r
-    if (k < -1.0): k = -1.0 # because of floating point precision
-    if (k > 1.0): k = 1.0   # this must be done
-    theta = math.acos(k)
+    # k = (x / math.cos(phi) - R) / r
+    # if (k < -1.0): k = -1.0 # because of floating point precision
+    # if (k > 1.0): k = 1.0   # this must be done
+    # theta = math.acos(k)
+    # return theta
+
+    l = (math.sqrt(x*x + y*y) - R) / r
+    if l > 1.0: l = 1.0
+    if l < -1.0: l = -1.0
+    theta = math.acos(l)
     return theta
 
 # function that return quadrant given coordinates
@@ -53,8 +63,8 @@ for i in range(0, H):
         inX = i - X
         inY = j - Y
 
-        if quadrant(inX, inY) == 3 or quadrant(inX, inY) == 4:
-            continue
+        # if quadrant(inX, inY) == 3 or quadrant(inX, inY) == 4:
+        #     continue
 
         if r*r <= inX*inX + inY*inY <= R*R: # inside the donut
             print(inX, inY) # to keep track of progress
@@ -65,7 +75,8 @@ for i in range(0, H):
             # if (inY < 0): signY = -1
             if (inX != 0.0): phi = math.atan(inY / inX)   # not 100% sure about this
 
-            theta = getTheta(inX, phi)
+            theta = getTheta(inX, inY, phi)
+            # print(theta)
             outX, outY = projectionCoordinates(theta, phi)
 
             outX += MAXX//2   # important to add the center coordinates
@@ -75,7 +86,7 @@ for i in range(0, H):
                 color = inImg.getpixel((i, j))
                 dib.point((outX, outY), color) # dib on outImg
     
-outImg.save("out11.jpg")
+outImg.save("out18.jpg")
 
 
 """
