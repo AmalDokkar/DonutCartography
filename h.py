@@ -66,7 +66,9 @@ for i in range(0, H):
 		# if quadrant(inX, inY) == 3 or quadrant(inX, inY) == 4:
 		#     continue
 		
-		if r*r <= inX*inX + inY*inY <= R*R: # inside the donut
+		lo, hi = R-r, R+r
+		
+		if lo*lo <= inX*inX + inY*inY <= hi*hi: # inside the donut
 			print(inX, inY) # to keep track of progress
 			# dib.point((inX + MAXX//2, inY + MAXY//2), 'Pink')  
 
@@ -94,8 +96,93 @@ for i in range(0, H):
 					color = inImg.getpixel((i, j))
 					dib.point((outX, outY), color) # dib on outImg
 				
-    
-outImg.save("fail9.jpg")
+for i in range(0, MAXX+1):
+	for j in range(0, MAXY+1):
+		color = outImg.getpixel((i, j))
+		if color != (0, 0, 0): continue
+		lo = 123
+		hi = MAXX//2
+		x = i-hi
+		y = j-hi
+		if hi*hi <= x*x + y*y or x*x + y*y <= lo*lo: continue
+		
+		n = 8
+		finalR = 0
+		finalG = 0
+		finalB = 0
+		
+		c1 = (0, 0, 0)
+		if i != 0 and j != 0:
+			c1 = outImg.getpixel((i-1, j-1))
+			finalR += c1[0]
+			finalG += c1[1]
+			finalB += c1[2]
+		else: n -= 1
+		
+		c2 = (0, 0, 0)
+		if i != 0:
+			c2 = outImg.getpixel((i-1, j))
+			finalR += c1[0]
+			finalG += c1[1]
+			finalB += c1[2]
+		else: n -= 1
+		
+		c3 = (0, 0, 0)
+		if i != 0 and j != MAXY:
+			c3 = outImg.getpixel((i-1, j+1))
+			finalR += c1[0]
+			finalG += c1[1]
+			finalB += c1[2]
+		else: n -= 1
+		
+		c4 = (0, 0, 0)
+		if j != 0:
+			c4 = outImg.getpixel((i, j-1))
+			finalR += c1[0]
+			finalG += c1[1]
+			finalB += c1[2]
+		else: n -= 1
+		
+		c5 = (0, 0, 0)
+		if j != MAXY:
+			c5 = outImg.getpixel((i, j+1))
+			finalR += c1[0]
+			finalG += c1[1]
+			finalB += c1[2]
+		else: n -= 1
+		
+		c6 = (0, 0, 0)
+		if i != MAXX and j != 0:
+			c6 = outImg.getpixel((i+1, j-1))
+			finalR += c1[0]
+			finalG += c1[1]
+			finalB += c1[2]
+		else: n -= 1
+		
+		c7 = (0, 0, 0)
+		if i != MAXX:
+			c7 = outImg.getpixel((i+1, j))
+			finalR += c1[0]
+			finalG += c1[1]
+			finalB += c1[2]
+		else: n -= 1
+		
+		c8 = (0, 0, 0)
+		if i != MAXX and j != MAXY:
+			c8 = outImg.getpixel((i+1, j+1))
+			finalR += c1[0]
+			finalG += c1[1]
+			finalB += c1[2]
+		else: n -= 1
+		
+		if n != 0:
+			finalR = finalR//n
+			finalG = finalG//n
+			finalB = finalB//n
+		
+		dib.point((i, j), (finalR, finalG, finalB))
+
+outImg.save("fail11.jpg")
 
 
 """
@@ -105,8 +192,8 @@ Test 1:
     X = 745
     Y = 725
 c/p:
-725
-220
-745
-725
+505
+222
+726
+746
 """
