@@ -1,5 +1,4 @@
 from PIL import Image, ImageDraw
-from collections import deque
 import math
 
 def projectionCoordinates (theta, phi):
@@ -21,36 +20,29 @@ def quadrant (x, y):
     elif (x < 0 and y < 0): return 3
     else: return 4
 
-R = int(input())
-r = int(input())
-
-X = int(input())
-Y = int(input())
-
-K = int(input())
-
+R = int(input("Enter the bigger radius of the torus (R): "))
+r = int(input("The smaller radius (r): "))
+X = int(input("Enter the X coordinate of the center: "))
+Y = int(input("The Y coordinate of the center: "))
+path = input("Enter the path of the input image (including the extension): ")
 MAX = 2*(R + 2*r)
 
-inImg = Image.open(r"/home/amaldok/Prog/OIFem-LoC-2021-22/donut.jpg")
-
+inImg = Image.open(path)
 H, W = inImg.size
-
 outImg = Image.new('RGB', (MAX + 1, MAX + 1), 'Black')
 dib = ImageDraw.Draw(outImg)
+u, v = [1, 1, 1, 0, 0, -1, -1, -1], [-1, 0, 1, -1, 1, -1, 0, 1]
 
+print("Generating projection...")
 for i in range(H):
     for j in range(W):
-        
         inX = i - X
         inY = j - Y
-
         lo, hi = R-r, R+r
-        if lo*lo <= inX*inX + inY*inY <= hi*hi:
-            print(inX, inY)
 
+        if lo*lo <= inX*inX + inY*inY <= hi*hi:
             phi = 10000000000
             if (inX != 0.0): phi = math.atan(inY / inX)
-
             theta = getTheta(inX, inY, phi)
             outX, outY = projectionCoordinates(theta, phi)
 
@@ -67,8 +59,13 @@ for i in range(H):
                     color = inImg.getpixel((i, j))
                     dib.point((outX, outY), color)
 
-bfs = deque()
-u, v = [1, 0, -1, 0], [0, 1, 0, -1]
+outImg.save("projection.jpg")
+print("Done")
+print("Filling...")
+
+def inBounds (x, y):
+    if (x < 0 or y < 0 or x > MAX or y > MAX): return False
+    return True
 
 def black (x, y):
     r, g, b = outImg.getpixel((x, y))
@@ -76,56 +73,24 @@ def black (x, y):
         return True
     return False
 
-def hasUncoloredNeighbours (x, y):
-    for i in range(4):
-        xi = x + u[i]
-        yi = y + v[i]
-        if (0 <= xi <= MAX and 0 <= yi <= MAX and black(xi, yi)):
-            return True
-    return False
-
-
 for i in range(MAX+1):
     for j in range(MAX+1):
-        if hasUncoloredNeighbours(i, j):
-            color = outImg.getpixel((i, j))
-            bfs.append((i, j, color))
+        if (i-MAX/2)**2 + (j-MAX/2)**2 > (MAX/2)**2: continue
+        if not black(i, j): continue
+        r, g, b, n = 0, 0, 0, 0
 
-while len(bfs) > 0:
-    x, y, color = bfs.popleft()
-    print(x, y)
-
-    z = (x-MAX/2)*(x-MAX/2) + (y-MAX/2)*(y-MAX/2)
-    if z < K*K or (MAX/2)*(MAX/2) < z:
-        continue
-
-    if black(x, y):
-        dib.point((x, y), color)
-
-    for i in range(4):
-        xi = x + u[i]
-        yi = y + v[i]
-        if (0 <= xi <= MAX and 0 <= yi <= MAX and black(xi, yi)):
-            bfs.append((x, y, color))
+        for k in range(8):
+            x = i + u[k]
+            y = j + v[k]
+            if not inBounds(x, y): continue
+            color = outImg.getpixel((x, y))
+            if color != (0, 0, 0):
+                r, g, b, n = r+color[0], g+color[1], b+color[2], n+1
+        if n != 0:
+            r, g, b = r//n, g//n, b//n
+            dib.point((i, j), (r, g, b))
     
-outImg.save("out22.jpg")
+outImg.save("filled.jpg")
+print("Done. Check the current directory")
 
-
-"""
-
-Test 1:
-    R = 505
-    r = 222
-    X = 726
-    Y = 726
-    K = 123
-
-c/p:
-
-505
-222
-726
-746
-123
-
-"""
+# /home/amaldok/Downloads/
